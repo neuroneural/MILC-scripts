@@ -1,13 +1,13 @@
 import os
 import random
 
-from catalyst import dl,metrics
+from catalyst import dl, metrics
 from catalyst.dl import (
     AccuracyCallback,
     AUCCallback,
     EarlyStoppingCallback,
     PrecisionRecallF1SupportCallback,
-    CheckpointCallback
+    CheckpointCallback,
 )
 import numpy as np
 from sklearn.metrics import roc_auc_score
@@ -33,10 +33,8 @@ class CustomRunner(dl.Runner):
     def on_loader_start(self, runner):
         super().on_loader_start(runner)
         self.meters = {
-            key: metrics.AdditiveMetric(compute_on_call=False)
-            for key in ["loss"]
+            key: metrics.AdditiveMetric(compute_on_call=False) for key in ["loss"]
         }
-
 
     def predict_batch(self, batch):
         #    # model inference step
@@ -52,8 +50,8 @@ class CustomRunner(dl.Runner):
         mode = "test"
 
         sx, targets = batch.dataset.tensors
-        sx = sx.to(self.device)
-        targets = targets.to(self.device)
+        # sx = sx.to(self.device)
+        # targets = targets.to(self.device)
 
         logits = self.model(sx, mode)
 
@@ -96,7 +94,7 @@ class CustomRunner(dl.Runner):
             "targets": targets,
             "targets_one_hot": y_onehot,
             "logits": logits,
-            "loss": loss
+            "loss": loss,
         }
         self.batch_metrics.update({"loss": loss})
         for key in ["loss"]:
@@ -113,17 +111,16 @@ class CustomRunner(dl.Runner):
 
     def acc_and_auc(self, logits, mode, targets):
 
-        sig = torch.softmax(logits, dim=1).to(self.device)
+        sig = torch.softmax(logits, dim=1)
         values, indices = sig.max(1)
         roc = 0.0
         acc = 0.0
         # y_scores = sig.detach().gather(1, targets.to(self.device).long().view(-1,1))
         if mode == "eval" or mode == "test":
-            y_scores = sig.to(self.device).detach()[:, 1]
+            # y_scores = sig.to(self.device).detach()[:, 1]
+            y_scores = sig.detach()[:, 1]
             roc = roc_auc_score(targets.to("cpu"), y_scores.to("cpu"))
-        accuracy = calculate_accuracy_by_labels(
-            indices, targets.to(self.device)
-        )
+        accuracy = calculate_accuracy_by_labels(indices, targets)
 
         return accuracy, roc
 
@@ -167,9 +164,7 @@ class CustomRunner(dl.Runner):
         loss = loss + lstm_loss + attn_loss
         return loss, CE_loss, E_loss, lstm_loss
 
-    def log_results(
-        self, epoch_loss, epoch_test_accuracy, epoch_roc, prefix=""
-    ):
+    def log_results(self, epoch_loss, epoch_test_accuracy, epoch_roc, prefix=""):
         print(
             "{}  Epoch Loss: {}, Epoch Accuracy: {}, roc: {},  {}".format(
                 prefix.capitalize(),
@@ -279,15 +274,19 @@ class LSTMTrainer(Trainer):
             #     metric_key="loss"
             # ),
             EarlyStoppingCallback(
-                patience=15, metric_key="loss", loader_key="valid", minimize=True, min_delta=0
+                patience=15,
+                metric_key="loss",
+                loader_key="valid",
+                minimize=True,
+                min_delta=0,
             ),
-            AccuracyCallback(num_classes=2,input_key="logits", target_key="targets"),
+            AccuracyCallback(num_classes=2, input_key="logits", target_key="targets"),
             AUCCallback(input_key="logits", target_key="targets"),
-        #     CheckpointCallback(
-        #     "./logs", loader_key="valid", metric_key="loss", minimize=True, save_n_best=3,
-        #     # load_on_stage_start={"model": "best"},
-        #     load_on_stage_end={"model": "best"}
-        # ),
+            #     CheckpointCallback(
+            #     "./logs", loader_key="valid", metric_key="loss", minimize=True, save_n_best=3,
+            #     # load_on_stage_start={"model": "best"},
+            #     load_on_stage_end={"model": "best"}
+            # ),
         ]
 
         scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
@@ -299,6 +298,8 @@ class LSTMTrainer(Trainer):
         runner = CustomRunner("./logs")
         v_bs = self.val_eps.shape[0]
         t_bs = self.tst_eps.shape[0]
+        # print("v_bs = ", v_bs)
+        # print("t_bs = ", t_bs)
         loaders = {
             "train": DataLoader(
                 train_dataset,
@@ -307,12 +308,12 @@ class LSTMTrainer(Trainer):
                 shuffle=True,
             ),
             "valid": DataLoader(
-                val_dataset, batch_size=v_bs, num_workers=0, shuffle=True,
+                val_dataset,
+                batch_size=v_bs,
+                num_workers=0,
+                shuffle=True,
             ),
         }
-
-
-
 
         if self.complete_arc == True:
             if self.PT in ["milc", "two-loss-milc"]:
@@ -342,7 +343,6 @@ class LSTMTrainer(Trainer):
         #               "loaders_params": loaders_params,
         #               "get_datasets_fn": self.datasets_fn,
         #               "num_features": num_features,
-
         #          },
 
         runner.train(
@@ -351,7 +351,7 @@ class LSTMTrainer(Trainer):
             # criterion=criterion,
             scheduler=scheduler,
             loaders=loaders,
-            valid_loader='valid',
+            valid_loader="valid",
             callbacks=callbacks,
             logdir="./logs",
             num_epochs=self.epochs,
@@ -362,9 +362,7 @@ class LSTMTrainer(Trainer):
         )
 
         loader = (
-            DataLoader(
-                test_dataset, batch_size=t_bs, num_workers=1, shuffle=True
-            ),
+            DataLoader(test_dataset, batch_size=t_bs, num_workers=1, shuffle=True),
         )
 
         (

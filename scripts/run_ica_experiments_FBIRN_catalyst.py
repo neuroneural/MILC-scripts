@@ -79,7 +79,7 @@ def train_encoder(args):
     tc = 140
 
     samples_per_subject = int(tc / sample_y)
-    samples_per_subject = 13
+    # samples_per_subject = 13
     # samples_per_subject = int((tc - sample_y)+1)
     ntest_samples_perclass = 32
     nval_samples_perclass = 16
@@ -97,7 +97,7 @@ def train_encoder(args):
     # return
     # For ICA TC Data
 
-    hf = h5py.File("../Data/FBIRN_AllData.h5", "r")
+    hf = h5py.File("./Data/FBIRN_AllData.h5", "r")
     data2 = hf.get("FBIRN_dataset")
     data2 = np.array(data2)
     data2 = data2.reshape(subjects, sample_x, tc)
@@ -111,9 +111,7 @@ def train_encoder(args):
             finalData.shape[0], finalData.shape[1], finalData.shape[2], 1
         )
     else:
-        finalData = np.zeros(
-            (subjects, samples_per_subject, sample_x, sample_y)
-        )
+        finalData = np.zeros((subjects, samples_per_subject, sample_x, sample_y))
         for i in range(subjects):
             for j in range(samples_per_subject):
                 finalData[i, j, :, :] = data[
@@ -122,7 +120,7 @@ def train_encoder(args):
         finalData = torch.from_numpy(finalData).float()
 
     print(finalData.shape)
-    filename = "../IndicesAndLabels/correct_indices_GSP.csv"
+    filename = "./IndicesAndLabels/correct_indices_GSP.csv"
     # print(filename)
     df = pd.read_csv(filename, header=None)
     c_indices = df.values
@@ -131,20 +129,22 @@ def train_encoder(args):
     c_indices = c_indices - 1
     finalData2 = finalData[:, :, c_indices.long(), :]
 
-    filename = "../IndicesAndLabels/index_array_labelled_FBIRN.csv"
-    df = pd.read_csv(filename, header=None)
-    index_array = df.values
-    index_array = torch.from_numpy(index_array).long()
-    index_array = index_array.view(subjects)
+    print(finalData2.shape)
 
-    filename = "../IndicesAndLabels/labels_FBIRN.csv"
+    # filename = "./IndicesAndLabels/index_array_labelled_FBIRN.csv"
+    # df = pd.read_csv(filename, header=None)
+    # index_array = df.values
+    # index_array = torch.from_numpy(index_array).long()
+    # index_array = index_array.view(subjects)
+
+    filename = "./IndicesAndLabels/labels_FBIRN.csv"
     df = pd.read_csv(filename, header=None)
     all_labels = df.values
     all_labels = torch.from_numpy(all_labels).int()
     all_labels = all_labels.view(subjects)
     all_labels = all_labels - 1
-    finalData2 = finalData2[index_array, :, :, :]
-    all_labels = all_labels[index_array]
+    # finalData2 = finalData2[index_array, :, :, :]
+    # all_labels = all_labels[index_array]
 
     if args.fMRI_twoD:
         finalData2 = finalData2.reshape(
@@ -192,9 +192,7 @@ def train_encoder(args):
 
             g_trial = 1
             output_text_file = open(output_path, "a+")
-            output_text_file.write(
-                "Trial = %d gTrial = %d\r\n" % (trial, g_trial)
-            )
+            output_text_file.write("Trial = %d gTrial = %d\r\n" % (trial, g_trial))
             output_text_file.close()
             # Get subject_per_class number of random values
             HC_random = torch.randperm(total_HC_index_tr.shape[0])
@@ -254,10 +252,6 @@ def train_encoder(args):
                 model_dict = torch.load(
                     path, map_location=device
                 )  # with good components
-            if args.CompleteArch == False:
-                if args.exp in ["UFPT", "FPT"]:
-                    encoder.load_state_dict(model_dict)
-
             complete_model = combinedModel(
                 encoder,
                 lstm_model,

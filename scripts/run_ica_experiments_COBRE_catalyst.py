@@ -25,6 +25,66 @@ def find_indices_of_each_class(all_labels):
 
 
 def train_encoder(args):
+    # print(args)
+    # args = Namespace(
+    #     batch_size=32,
+    #     beta=1.0,
+    #     checkpoint_index=-1,
+    #     collect_mode="random_agent",
+    #     color=False,
+    #     complete_arc=True,
+    #     cuda_id=1,
+    #     deep=False,
+    #     encoder_type="NatureOne",
+    #     end_with_relu=False,
+    #     entropy_threshold=0.6,
+    #     env_name="MontezumaRevengeNoFrameskip-v4",
+    #     epochs=3000,
+    #     exp="UFPT",
+    #     fMRI_feature_size=1024,
+    #     fMRI_lstm_size=512,
+    #     fMRI_twoD=False,
+    #     feature_size=256,
+    #     fig_path="/data/mialab/users/umahmood1/STDIMs/baselines/pytorch-a2c-ppo-acktr-gail/STDIM_fMRI/scripts/wandb",
+    #     gain=0.1,
+    #     gru_layers=2,
+    #     gru_size=256,
+    #     job_ID=1,
+    #     linear=True,
+    #     lr=0.0003,
+    #     lstm_layers=1,
+    #     lstm_size=200,
+    #     method="sub-lstm",
+    #     naff_fc_size=2048,
+    #     no_downsample=True,
+    #     num_frame_stack=1,
+    #     num_processes=8,
+    #     num_rew_evals=10,
+    #     num_runs=1,
+    #     oldpath="/data/mialab/users/umahmood1/STDIMs/baselines/pytorch-a2c-ppo-acktr-gail/STDIM_fMRI/scripts/wandb",
+    #     p_path="/data/mialab/users/umahmood1/STDIMs/baselines/pytorch-a2c-ppo-acktr-gail/STDIM_fMRI/scripts/wandb",
+    #     path="/data/mialab/users/umahmood1/STDIMs/baselines/pytorch-a2c-ppo-acktr-gail/STDIM_fMRI/scripts/wandb",
+    #     patience=15,
+    #     pre_training="milc",
+    #     pred_offset=1,
+    #     pretraining_steps=100000,
+    #     probe_collect_mode="random_agent",
+    #     probe_lr=3e-06,
+    #     probe_steps=50000,
+    #     sample_number=0,
+    #     script_ID=3,
+    #     seed=42,
+    #     sequence_length=100,
+    #     steps_end=99,
+    #     steps_start=0,
+    #     steps_step=4,
+    #     temperature=0.25,
+    #     teststart_ID=1,
+    #     train_encoder=True,
+    #     use_multiple_predictors=False,
+    #     wandb_proj="curl-atari-neurips-scratch",
+    #     weights_path="None",
+    # )
     start_time = time.time()
     # do stuff
 
@@ -91,18 +151,18 @@ def train_encoder(args):
     current_gain = gain[ID]
     args.gain = current_gain
 
-    hf = h5py.File("../Data/COBRE_AllData.h5", "r")
+    hf = h5py.File("./Data/COBRE_AllData.h5", "r")
     data = hf.get("COBRE_dataset")
     data = np.array(data)
     data = data.reshape(subjects, sample_x, tc)
 
     # Get Training indices for cobre and convert them to tensor. this is to have same training samples everytime.
-    hf_hc = h5py.File("../IndicesAndLabels/COBRE_HC_TrainingIndex.h5", "r")
+    hf_hc = h5py.File("./IndicesAndLabels/COBRE_HC_TrainingIndex.h5", "r")
     HC_TrainingIndex = hf_hc.get("HC_TrainingIndex")
     HC_TrainingIndex = np.array(HC_TrainingIndex)
     HC_TrainingIndex = torch.from_numpy(HC_TrainingIndex)
 
-    hf_sz = h5py.File("../IndicesAndLabels/COBRE_SZ_TrainingIndex.h5", "r")
+    hf_sz = h5py.File("./IndicesAndLabels/COBRE_SZ_TrainingIndex.h5", "r")
     SZ_TrainingIndex = hf_sz.get("SZ_TrainingIndex")
     SZ_TrainingIndex = np.array(SZ_TrainingIndex)
     SZ_TrainingIndex = torch.from_numpy(SZ_TrainingIndex)
@@ -115,9 +175,7 @@ def train_encoder(args):
             finalData.shape[0], finalData.shape[1], finalData.shape[2], 1
         )
     else:
-        finalData = np.zeros(
-            (subjects, samples_per_subject, sample_x, sample_y)
-        )
+        finalData = np.zeros((subjects, samples_per_subject, sample_x, sample_y))
         for i in range(subjects):
             for j in range(samples_per_subject):
                 finalData[i, j, :, :] = data[
@@ -125,8 +183,8 @@ def train_encoder(args):
                 ]
         finalData = torch.from_numpy(finalData).float()
 
-    print(finalData.shape)
-    filename = "../IndicesAndLabels/correct_indices_GSP.csv"
+    print("Final data shape: ", finalData.shape)
+    filename = "./IndicesAndLabels/correct_indices_GSP.csv"
     # print(filename)
     df = pd.read_csv(filename, header=None)
     c_indices = df.values
@@ -135,13 +193,13 @@ def train_encoder(args):
     c_indices = c_indices - 1
     finalData2 = finalData[:, :, c_indices.long(), :]
 
-    filename = "../IndicesAndLabels/index_array_labelled_COBRE.csv"
+    filename = "./IndicesAndLabels/index_array_labelled_COBRE.csv"
     df = pd.read_csv(filename, header=None)
     index_array = df.values
     index_array = torch.from_numpy(index_array).long()
     index_array = index_array.view(subjects)
 
-    filename = "../IndicesAndLabels/labels_COBRE.csv"
+    filename = "./IndicesAndLabels/labels_COBRE.csv"
     df = pd.read_csv(filename, header=None)
     df = pd.read_csv(filename, header=None)
     all_labels = df.values
@@ -204,7 +262,24 @@ def train_encoder(args):
         val_labels = all_labels[val_index.long()]
         test_labels = all_labels[test_index.long()]
 
+        print(tr_eps.shape)
+        print(val_eps.shape)
+        print(test_eps.shape)
+
+        print(tr_labels.shape)
+        print(val_labels.shape)
+        print(test_labels.shape)
+
+        # torch.Size([80, 7, 53, 20])
+        # torch.Size([30, 7, 53, 20])
+        # torch.Size([30, 7, 53, 20])
+        # torch.Size([80])
+        # torch.Size([30])
+        # torch.Size([30])
+
         observation_shape = finalData2.shape
+
+        print(observation_shape[2])
         if args.encoder_type == "Nature":
             encoder = NatureCNN(observation_shape[2], args)
 
@@ -216,6 +291,7 @@ def train_encoder(args):
                 args.oldpath = wpath1 + "/PreTrainedEncoders/Milc"
 
             encoder = NatureOneCNN(observation_shape[2], args)
+            print(current_gain)
             lstm_model = subjLSTM(
                 device,
                 args.feature_size,

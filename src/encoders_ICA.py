@@ -73,9 +73,7 @@ class NatureCNN(nn.Module):
         f7 = self.main[6:8](f5)
         out = self.main[8:](f7)
         if self.end_with_relu:
-            assert (
-                self.args.method != "vae"
-            ), "can't end with relu and use vae!"
+            assert self.args.method != "vae", "can't end with relu and use vae!"
             out = F.relu(out)
         if fmaps:
             return {
@@ -125,16 +123,18 @@ class NatureOneCNN(nn.Module):
             )
 
         else:
+            # problem with OASIS input is prolly here
             self.final_conv_size = 200 * 12
             self.final_conv_shape = (200, 12)
+            print("feature_size = ", self.feature_size)
             self.main = nn.Sequential(
-                init_(nn.Conv1d(input_channels, 64, 4, stride=1)),
+                init_(nn.Conv1d(input_channels, 64, 4, stride=1)),  # 0
                 nn.ReLU(),
                 init_(nn.Conv1d(64, 128, 4, stride=1)),
                 nn.ReLU(),
                 init_(nn.Conv1d(128, 200, 3, stride=1)),
                 nn.ReLU(),
-                Flatten(),
+                Flatten(),  # 6
                 init_(nn.Linear(self.final_conv_size, self.feature_size)),
                 init_(nn.Conv1d(200, 128, 3, stride=1)),
                 nn.ReLU(),
@@ -143,14 +143,18 @@ class NatureOneCNN(nn.Module):
         # self.train()
 
     def forward(self, inputs, fmaps=False, five=False):
+        # print("inputs = ", inputs.shape)
+        # inputs =  torch.Size([7, 53, 20]) for COBRE
+        # inputs =  torch.Size([6, 53, 26]) for OASIS
         f5 = self.main[:6](inputs)
+        # print("f5 = ", f5.shape)
+        # f5 =  torch.Size([7, 200, 12]) for COBRE
+        # f5 =  torch.Size([6, 200, 18]) for OASIS
         out = self.main[6:8](f5)
         f5 = self.main[8:](f5)
 
         if self.end_with_relu:
-            assert (
-                self.args.method != "vae"
-            ), "can't end with relu and use vae!"
+            assert self.args.method != "vae", "can't end with relu and use vae!"
             out = F.relu(out)
         if five:
             return f5.permute(0, 2, 1)
