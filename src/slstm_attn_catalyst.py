@@ -28,7 +28,6 @@ from .utils import (
     calculate_FP_Max,
 )
 
-
 class CustomRunner(dl.Runner):
     def on_loader_start(self, runner):
         super().on_loader_start(runner)
@@ -359,6 +358,7 @@ class LSTMTrainer(Trainer):
             load_best_on_end=True,
             valid_metric="loss",
             minimize_valid_metric=True,
+            loggers={"wandb": dl.WandbLogger(project="milc-oasis", name="catalyst native logging")}
         )
 
         loader = (

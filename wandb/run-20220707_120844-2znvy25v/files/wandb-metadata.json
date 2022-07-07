@@ -1,0 +1,30 @@
+{
+    "os": "Linux-3.10.0-1160.42.2.el7.x86_64-x86_64-with-glibc2.17",
+    "python": "3.9.12",
+    "heartbeatAt": "2022-07-07T16:08:50.733465",
+    "startedAt": "2022-07-07T16:08:44.161428",
+    "docker": null,
+    "cpu_count": 64,
+    "cuda": null,
+    "args": [
+        "--pre-training",
+        "milc",
+        "--script-ID",
+        "3",
+        "--exp",
+        "UFPT",
+        "--method",
+        "sub-lstm"
+    ],
+    "state": "running",
+    "program": "-m scripts.run_ica_experiments_OASIS_catalyst",
+    "git": {
+        "remote": "git@github.com:cedwards57/MILC.git",
+        "commit": "4d05ab23a2b7518c3d97f2093b63ff8a7bc2d42d"
+    },
+    "email": null,
+    "root": "/data/users2/cedwards57/MILC",
+    "host": "trendsagn020.rs.gsu.edu",
+    "username": "cedwards57",
+    "executable": "/home/users/cedwards57/anaconda3/bin/python"
+}
