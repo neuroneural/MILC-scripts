@@ -15,6 +15,7 @@ from src.lstm_attn import subjLSTM
 from src.slstm_attn_catalyst import LSTMTrainer
 from src.utils import get_argparser
 import torch
+import wandb
 
 # from tensorboardX import SummaryWriter
 
@@ -295,6 +296,7 @@ def train_encoder(args):
 
 
 if __name__ == "__main__":
+    wandb.init(project="milc-fbirn", entity="cedwards57")
     parser = get_argparser()
     args = parser.parse_args()
     tags = ["pretraining-only"]

@@ -6,3 +6,4 @@ opencv-python
 scikit-learn
 torch
 catalyst
+nibabel

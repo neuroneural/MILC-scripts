@@ -1,3 +1,26 @@
+import sys 
+sys.path.append('.')
+
+from torch.utils.data import DataLoader
+from sklearn.model_selection import train_test_split
+import wandb
+
+from src.bsnip_groups import GroupsDataset
+from src.All_Architecture import combinedModel
+from src.encoders_ICA import NatureCNN, NatureOneCNN
+from src.lstm_attn import subjLSTM
+from src.slstm_attn_catalyst import LSTMTrainer
+
+data = GroupsDataset("./Data/bsnip2/bsnip2_labels.csv")
+x_train, x_test, y_train, y_test = train_test_split(data.nifti_files, data.labels, test_size=.3, random_state=42)
+train_loader = DataLoader(x_train, batch_size=20, shuffle=True)
+test_loader = DataLoader(x_test, batch_size=20, shuffle=True)
+
+
+
+
+
+
 from collections import deque
 import datetime
 from itertools import chain
@@ -215,7 +238,7 @@ def train_encoder(args):
 
 
 if __name__ == "__main__":
-    wandb.init(project="milc-oasis", entity="cedwards57")
+    wandb.init(project="milc-bsnip2", entity="cedwards57")
     parser = get_argparser()
     args = parser.parse_args()
     tags = ["pretraining-only"]
