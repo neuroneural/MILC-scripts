@@ -358,7 +358,7 @@ class LSTMTrainer(Trainer):
             load_best_on_end=True,
             valid_metric="loss",
             minimize_valid_metric=True,
-            loggers={"wandb": dl.WandbLogger(project="milc-fbirn", name="test_1")}
+            loggers={"wandb": dl.WandbLogger(project="milc-bsnip2", name="test_1")}
         )
 
         loader = (

@@ -6,35 +6,6 @@ import pandas as pd
 import glob
 device = "cuda"
 
-
-### CODE THAT CREATED THE bsnip2_labels.csv FILE ###
-# data = pd.read_csv("./Data/bsnip2/bsnip2_ad_preliminary_20201221.csv")
-# subjects = pd.read_csv("./Data/bsnip2/bsnip2_subjects.txt", header=None)
-# subjects = list(subjects[0])
-# groups = []
-# missing = []
-# for i, subject_id in enumerate(subjects):
-#   new = data.loc[data['subject_id'] == subject_id]
-#   try:
-#     groups.append(list(new["group"])[0])
-#   except IndexError:
-#     missing.append(i)
-#     continue
-
-# filenames = list(glob.glob("./Data/bsnip2/ts/BSNIP2_sub*_timecourses_ica_s1_.nii"))
-# for i in reversed(missing):
-#   filenames.remove(filenames[i])
-
-# groups_list = list(set(groups))
-# groups_map = dict(zip(groups_list, range(len(groups_list))))
-# # print(groups_map)
-# dset = {"filename": filenames,"group": groups}
-# df = pd.DataFrame(dset)
-# df["group"] = df["group"].map(groups_map)
-# df.to_csv("./Data/bsnip2/bsnip2_labels.csv")
-###
-
-
 class GroupsDataset(Dataset):
   def __init__(self, csv_location):
     super(GroupsDataset, self).__init__()
@@ -53,3 +24,34 @@ class GroupsDataset(Dataset):
   def __len__(self):
     return len(self.labels)
 
+
+### CODE THAT CREATED THE bsnip2_labels.csv FILE ###
+# # grab & log correct subject IDs
+# data = pd.read_csv("./Data/bsnip2/bsnip2_ad_preliminary_20201221.csv")
+# subjects = pd.read_csv("./Data/bsnip2/bsnip2_subjects.txt", header=None)
+# subjects = list(subjects[0])
+# groups = []
+# missing = []
+# for i, subject_id in enumerate(subjects):
+#   new = data.loc[data['subject_id'] == subject_id]
+#   try:
+#     groups.append(list(new["group"])[0])
+#   except IndexError:
+#     missing.append(i)
+# # missing_ids = [subjects[i] for i in missing]
+# # print(missing_ids)
+
+# # remove missing indeces from filenames list
+# filenames = list(glob.glob("./Data/bsnip2/ts/BSNIP2_sub*_timecourses_ica_s1_.nii"))
+# for i in reversed(missing):
+#   filenames.remove(filenames[i])
+
+# # map each group to a number, save all to the labels file
+# groups_list = list(set(groups))
+# groups_map = dict(zip(groups_list, range(len(groups_list))))
+# # print(groups_map)
+# dset = {"filename": filenames,"group": groups}
+# df = pd.DataFrame(dset)
+# df["group"] = df["group"].map(groups_map)
+# df.to_csv("./Data/bsnip2/bsnip2_labels.csv")
+### ###
