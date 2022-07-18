@@ -7,18 +7,28 @@ import glob
 device = "cuda"
 
 class GroupsDataset(Dataset):
-  def __init__(self, csv_location):
+  def __init__(self, csv_location, MAX_TC=140):
+    # max_TC sets max time
     super(GroupsDataset, self).__init__()
     self.df = pd.read_csv(csv_location)
+    self.shape = self.df.shape
     self.nifti_files = self.df['filename']
     self.labels = self.df['group']
+    self.MAX_TC = MAX_TC
 
   def __getitem__(self, k):
+    print(self.nifti_files[57])
+    print("#####")
     # load the nifti file from a given filename
     img = nib.load(self.nifti_files[k])
+    img = img.slicer[:,:self.MAX_TC]
     # loads the corresponding label (integer)
     label = self.labels[k]
-    return img.get_fdata().T, label
+
+    img = img.get_fdata().T
+    img = img.reshape(img.shape[0], img.shape[1], 1)
+
+    return img, label
     
   
   def __len__(self):

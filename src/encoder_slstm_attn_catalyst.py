@@ -143,12 +143,15 @@ class LSTMTrainer(Trainer):
         scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
             self.optimizer, mode="min"
         )
-        train_dataset = TensorDataset(
-            self.tr_eps, torch.arange(self.tr_eps.shape[0])
-        )
-        val_dataset = TensorDataset(
-            self.val_eps, torch.arange(self.val_eps.shape[0])
-        )
+        # train_dataset = TensorDataset(
+        #     self.tr_eps, torch.arange(self.tr_eps.shape[0])
+        # )
+        # val_dataset = TensorDataset(
+        #     self.val_eps, torch.arange(self.val_eps.shape[0])
+        # )
+
+        train_dataset = GroupsDataset("./Data/bsnip2/bsnip2_labels.csv")
+
         runner = CustomRunner()
         v_bs = self.val_eps.shape[0]
         loaders = {
@@ -157,13 +160,13 @@ class LSTMTrainer(Trainer):
                 batch_size=self.batch_size,
                 num_workers=1,
                 shuffle=True,
-            ),
-            "valid": DataLoader(
-                val_dataset,
-                batch_size=self.batch_size,
-                num_workers=1,
-                shuffle=True,
-            ),
+            )
+            # "valid": DataLoader(
+            #     val_dataset,
+            #     batch_size=self.batch_size,
+            #     num_workers=1,
+            #     shuffle=True,
+            # ),
         }
 
         model = self.model
@@ -173,10 +176,10 @@ class LSTMTrainer(Trainer):
             "batch_size": 64,
             "shuffle": True,
         }
-        val_loader_param = {
-            "batch_size": 32,
-            "shuffle": True,
-        }
+        # val_loader_param = {
+        #     "batch_size": 32,
+        #     "shuffle": True,
+        # }
 
         loaders_params = {
             "train": train_loader_param,

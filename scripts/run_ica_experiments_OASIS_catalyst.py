@@ -103,6 +103,8 @@ def train_encoder(args):
     finalData = np.zeros(
         (features.shape[0], samples_per_subject, features.shape[1], sample_y)
     )
+
+    #window shifting
     for i in range(features.shape[0]):
         for j in range(samples_per_subject):
             finalData[i, j, :, :] = features[

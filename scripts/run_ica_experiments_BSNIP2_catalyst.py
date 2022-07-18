@@ -11,7 +11,7 @@ import wandb
 from src.All_Architecture import combinedModel
 from src.encoders_ICA import NatureCNN, NatureOneCNN
 from src.lstm_attn import subjLSTM
-from src.slstm_attn_catalyst import LSTMTrainer
+from src.bsnip_slstm_attn_catalyst import BSNIPLSTMTrainer
 from src.bsnip_groups import GroupsDataset
 
 # wandb.init(project="milc-bsnip2", entity="cedwards57")
@@ -21,11 +21,19 @@ config = {}
 config.update(vars(args))
 
 data = GroupsDataset("./Data/bsnip2/bsnip2_labels.csv")
-trainset, testset = train_test_split(
+fulltrainset, testset = train_test_split(
     data,
     test_size=.3,
     random_state=42
 )
+
+trainset, validset = train_test_split(
+    fulltrainset,
+    test_size=.2,
+    random_state=42
+)
+
+# add val split?
 # train_loader = DataLoader(trainset, batch_size=20, shuffle=True)
 # test_loader = DataLoader(testset, batch_size=20, shuffle=True)
 
@@ -64,15 +72,23 @@ config = {}
 config.update(vars(args))
 config["obs_space"] = observation_shape
 
+# FBIRN - if args.fMRI_twoD -- if expected 4D input 
+# FBIRN 108-113 -- into get_item function
+
 trainer = LSTMTrainer(
     complete_model,
     config,
     device=device,
-    tr_labels=tr_labels,
-    val_labels=val_labels,
-    test_labels=test_labels,
+    # tr_labels=tr_labels,
+    # val_labels=val_labels,
+    # test_labels=test_labels,
+    trainset=trainset,
+    testset=testset,
+    validset=validset,
     wandb="wandb",
     trial=str(trial),
     gtrial=str(g_trial),
 )
 
+# test_acc, test_auc, test_loss = trainer.train()
+trainer.train()

@@ -104,14 +104,16 @@ def train_encoder(args):
     data2 = data2.reshape(subjects, sample_x, tc)
     data = data2
 
+    # transpose & 3dify, covered in GroupsDataset __getitem__
     if args.fMRI_twoD:
         finalData = data
         finalData = torch.from_numpy(finalData).float()
         finalData = finalData.permute(0, 2, 1)
         finalData = finalData.reshape(
-            finalData.shape[0], finalData.shape[1], finalData.shape[2], 1
+            finalData.shape[0], finalData.shape[1], finalData.shape[2], 1  #makes this a 4D tensor
         )
     else:
+        #windowshifting - ignore for bsnip
         finalData = np.zeros((subjects, samples_per_subject, sample_x, sample_y))
         for i in range(subjects):
             for j in range(samples_per_subject):
