@@ -5,5 +5,7 @@ h5py
 opencv-python
 scikit-learn
 torch
-catalyst
+catalyst==22.4
 nibabel
+wandb
+tensorboard

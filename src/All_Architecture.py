@@ -67,6 +67,12 @@ class combinedModel(nn.Module):
                         os.path.join(self.oldpath, "encoder" + ".pt"),
                         map_location=self.device,
                     )
+                    ###
+                    # model_dict["main.6.weight"] = model_dict.pop("main.7.weight")
+                    # model_dict["main.6.bias"] = model_dict.pop("main.7.bias")
+                    # model_dict["main.9.weight"] = model_dict.pop("main.8.weight")
+                    # model_dict["main.9.bias"] = model_dict.pop("main.8.bias")
+                    ###
                     self.encoder.load_state_dict(model_dict)
 
                     model_dict = torch.load(

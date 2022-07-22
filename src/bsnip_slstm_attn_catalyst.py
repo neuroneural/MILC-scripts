@@ -1,7 +1,7 @@
 import os
 import random
 
-from catalyst import dl, metrics
+from catalyst import dl, metrics, runners
 from catalyst.dl import (
     AccuracyCallback,
     AUCCallback,
@@ -69,7 +69,9 @@ class CustomRunner(dl.Runner):
         return epoch_accuracy, epoch_roc, epoch_loss
 
     def handle_batch(self, batch):
-
+        # print("#####\n#####\n#####")
+        # print(batch.shape)
+        # print("#####\n#####\n#####")
         sx, targets = batch
         targets = targets.long()
         if self.is_train_loader:
@@ -84,7 +86,7 @@ class CustomRunner(dl.Runner):
 
         loss = loss.mean()
 
-        # self.output = {"logits": logits}
+        # # self.output = {"logits": logits}
         y_onehot = torch.FloatTensor(sx.shape[0], 2)
         y_onehot.zero_()
         y_onehot[np.arange(sx.shape[0]), targets] = 1
@@ -206,7 +208,8 @@ class BSNIPLSTMTrainer(Trainer):
         self.batch_size = config["batch_size"]
         self.sample_number = config["sample_number"]
         self.path = config["path"]
-        self.oldpath = config["oldpath"]
+        # self.oldpath = config["oldpath"]
+        self.oldpath = "/data/users2/cedwards57/MILC/wandb_new/PreTrainedEncoders/Milc"
         self.PT = config["pre_training"]
         self.device = device
         self.gain = config["gain"]
@@ -305,7 +308,7 @@ class BSNIPLSTMTrainer(Trainer):
         val_dataset = self.validset
         test_dataset = self.testset
 
-        runner = CustomRunner("./logs")
+        runner = dl.SupervisedRunner()
         # v_bs = self.val_eps.shape[0]
         # t_bs = self.tst_eps.shape[0]
 
@@ -335,7 +338,7 @@ class BSNIPLSTMTrainer(Trainer):
                     )
                     model_dict = model_dict["model_state_dict"]
                     print("Complete Arch Loaded")
-                    self.model.load_state_dict(model_dict)
+                    # self.model.load_state_dict(model_dict)
         # num_features=2
         # model training
         # train_loader_param = {"batch_size": 64,

@@ -4,10 +4,11 @@ from torch.utils.data import Dataset
 import nibabel as nib
 import pandas as pd
 import glob
+import numpy as np
 device = "cuda"
 
 class GroupsDataset(Dataset):
-  def __init__(self, csv_location, MAX_TC=140):
+  def __init__(self, csv_location, MAX_TC=200):
     # max_TC sets max time
     super(GroupsDataset, self).__init__()
     self.df = pd.read_csv(csv_location)
@@ -17,20 +18,29 @@ class GroupsDataset(Dataset):
     self.MAX_TC = MAX_TC
 
   def __getitem__(self, k):
-    print(self.nifti_files[57])
-    print("#####")
-    # load the nifti file from a given filename
-    img = nib.load(self.nifti_files[k])
-    img = img.slicer[:,:self.MAX_TC]
     # loads the corresponding label (integer)
     label = self.labels[k]
+    if isinstance(k,int):
+      # load the nifti file from a given filename
+      img = nib.load(self.nifti_files[k])
+      img = img.slicer[:,:self.MAX_TC]
+      img = img.get_fdata().T
+      img = img.reshape(img.shape[0], img.shape[1], 1)
 
-    img = img.get_fdata().T
-    img = img.reshape(img.shape[0], img.shape[1], 1)
-
+    else: # if k is a Series
+      img = []
+      for i in self.nifti_files[k]:
+        new = nib.load(i)
+        new = new.slicer[:self.MAX_TC,:]
+        new = new.get_fdata().T
+        new = new.reshape(new.shape[0], new.shape[1], 1)
+        img.append(new)
+      img = np.stack(img)
+      label = label.to_numpy()
+      print(img.shape)
+      print(label.shape)
     return img, label
     
-  
   def __len__(self):
     return len(self.labels)
 

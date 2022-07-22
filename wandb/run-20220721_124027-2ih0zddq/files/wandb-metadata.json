@@ -1,0 +1,30 @@
+{
+    "os": "Linux-3.10.0-1160.42.2.el7.x86_64-x86_64-with-glibc2.17",
+    "python": "3.9.12",
+    "heartbeatAt": "2022-07-21T16:40:33.757120",
+    "startedAt": "2022-07-21T16:40:27.595175",
+    "docker": null,
+    "cpu_count": 64,
+    "cuda": null,
+    "args": [
+        "--pre-training",
+        "milc",
+        "--script-ID",
+        "3",
+        "--exp",
+        "UFPT",
+        "--method",
+        "sub-lstm"
+    ],
+    "state": "running",
+    "program": "-m scripts.run_ica_experiments_OASIS_catalyst",
+    "git": {
+        "remote": "git@github.com:neuroneural/MILC-scripts.git",
+        "commit": "6c4994a1549d7d4499dc318bd8a1d681ddf25fa0"
+    },
+    "email": null,
+    "root": "/data/users2/cedwards57/MILC",
+    "host": "trendsagn012.rs.gsu.edu",
+    "username": "cedwards57",
+    "executable": "/home/users/cedwards57/anaconda3/bin/python"
+}
