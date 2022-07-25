@@ -190,6 +190,7 @@ class BSNIPLSTMTrainer(Trainer):
         trial="",
         crossv="",
         gtrial="",
+        batch_size=100
     ):
         super().__init__("encoder", wandb, device)
         self.config = config
@@ -205,7 +206,7 @@ class BSNIPLSTMTrainer(Trainer):
         self.validset = validset
         self.patience = self.config["patience"]
         self.epochs = config["epochs"]
-        self.batch_size = config["batch_size"]
+        self.batch_size = batch_size # config["batch_size"]
         self.sample_number = config["sample_number"]
         self.path = config["path"]
         # self.oldpath = config["oldpath"]
@@ -308,7 +309,9 @@ class BSNIPLSTMTrainer(Trainer):
         val_dataset = self.validset
         test_dataset = self.testset
 
-        runner = dl.SupervisedRunner()
+        runner = dl.SupervisedRunner(
+            input_key="features", output_key="logits", target_key="targets", loss_key="loss"
+        )
         # v_bs = self.val_eps.shape[0]
         # t_bs = self.tst_eps.shape[0]
 

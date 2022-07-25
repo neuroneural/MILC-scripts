@@ -84,6 +84,7 @@ def train_encoder(args):
         validset=validset,
         wandb="wandb",
         trial="1",
+        batch_size=20,
         # gtrial=str(g_trial),
     )
     trainer.train()

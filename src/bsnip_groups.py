@@ -27,7 +27,7 @@ class GroupsDataset(Dataset):
       img = img.get_fdata().T
       img = img.reshape(img.shape[0], img.shape[1], 1)
 
-    else: # if k is a Series
+    else: # k is an ndarray. it has the same shape as what labels.shape outputs at the end.
       img = []
       for i in self.nifti_files[k]:
         new = nib.load(i)
