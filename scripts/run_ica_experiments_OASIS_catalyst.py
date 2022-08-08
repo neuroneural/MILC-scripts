@@ -217,7 +217,7 @@ def train_encoder(args):
 
 
 if __name__ == "__main__":
-    wandb.init(project="milc-oasis", entity="cedwards57")
+    # wandb.init(project="milc-oasis", entity="cedwards57")
     parser = get_argparser()
     args = parser.parse_args()
     tags = ["pretraining-only"]

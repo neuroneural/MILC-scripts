@@ -23,9 +23,9 @@ class GroupsDataset(Dataset):
     if isinstance(k,int):
       # load the nifti file from a given filename
       img = nib.load(self.nifti_files[k])
-      img = img.slicer[:,:self.MAX_TC]
+      img = img.slicer[:self.MAX_TC,:]
       img = img.get_fdata().T
-      img = img.reshape(img.shape[0], img.shape[1], 1)
+      img = img.reshape((1, img.shape[0], img.shape[1]))
 
     else: # k is an ndarray. it has the same shape as what labels.shape outputs at the end.
       img = []
@@ -33,12 +33,14 @@ class GroupsDataset(Dataset):
         new = nib.load(i)
         new = new.slicer[:self.MAX_TC,:]
         new = new.get_fdata().T
-        new = new.reshape(new.shape[0], new.shape[1], 1)
+        new = new.reshape((1, new.shape[0], new.shape[1]))
         img.append(new)
       img = np.stack(img)
+      # img = img.float()
       label = label.to_numpy()
-      print(img.shape)
-      print(label.shape)
+      # label = label.float()
+      # print(f"img.shape: {img.shape}")
+      # print(f"label.shape: {label.shape}")
     return img, label
     
   def __len__(self):

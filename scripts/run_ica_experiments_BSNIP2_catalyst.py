@@ -3,6 +3,7 @@ import sys
 sys.path.append('.')
 
 import torch
+from torch.utils.data import Subset
 from sklearn.model_selection import train_test_split
 from src.utils import get_argparser
 import wandb
@@ -15,18 +16,22 @@ from src.bsnip_groups import GroupsDataset
 
 def train_encoder(args):
     data = GroupsDataset("./Data/bsnip2/bsnip2_labels.csv")
-    fulltrainset, testset = train_test_split(
-        data,
+    fulltrain_idx, test_idx = train_test_split(
+        list(range(len(data))),
         test_size=.3,
         random_state=42
     )
 
-    trainset, validset = train_test_split(
-        fulltrainset,
+    train_idx, valid_idx = train_test_split(
+        list(fulltrain_idx),
         test_size=.2,
         random_state=42
     )
-
+    
+    trainset = Subset(data, train_idx)
+    testset = Subset(data, test_idx)
+    validset = Subset(data, valid_idx)
+    
     wdb1 = "wandb_new"
     wpath1 = os.path.join(os.getcwd(), wdb1)
     dir = "PreTrainedEncoders/Milc/encoder.pt"
@@ -62,7 +67,8 @@ def train_encoder(args):
         exp="UFPT",
         device=device,
         oldpath=oldpath,
-        complete_arc=True
+        complete_arc=True,
+        num_classes=5
     )
     config = {}
     config.update(vars(args))
@@ -84,7 +90,7 @@ def train_encoder(args):
         validset=validset,
         wandb="wandb",
         trial="1",
-        batch_size=20,
+        batch_size=32,
         # gtrial=str(g_trial),
     )
     trainer.train()

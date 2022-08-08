@@ -20,6 +20,7 @@ class combinedModel(nn.Module):
         device="cuda",
         oldpath="",
         complete_arc=False,
+        num_classes=5
     ):
 
         super().__init__()
@@ -31,6 +32,7 @@ class combinedModel(nn.Module):
         self.device = device
         self.oldpath = oldpath
         self.complete_arc = complete_arc
+        self.num_classes = num_classes
         self.attn = nn.Sequential(
             nn.Linear(2 * self.lstm.hidden_dim, 128),
             nn.ReLU(),
@@ -40,7 +42,7 @@ class combinedModel(nn.Module):
         self.decoder = nn.Sequential(
             nn.Linear(self.lstm.hidden_dim, self.lstm.hidden_dim),
             nn.ReLU(),
-            nn.Linear(self.lstm.hidden_dim, 2),
+            nn.Linear(self.lstm.hidden_dim, self.num_classes),
         )
         self.classifier1 = nn.Sequential(
             nn.Linear(self.encoder.feature_size, self.lstm.hidden_dim),
@@ -115,11 +117,11 @@ class combinedModel(nn.Module):
 
         attn_applied = attn_applied.squeeze()
         logits = self.decoder(attn_applied)
+        
         # print("attention decoder ", time.time() - t)
         return logits
 
     def forward(self, sx, mode="train"):
-
         inputs = [self.encoder(x, fmaps=False) for x in sx]
         outputs = self.lstm(inputs, mode)
         logits = self.get_attention(outputs)

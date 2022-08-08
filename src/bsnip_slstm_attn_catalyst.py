@@ -79,6 +79,7 @@ class CustomRunner(dl.Runner):
         else:
             mode = "eval"
         logits = self.model(sx, mode)
+        print("#####\n#####\n#####")
         loss = F.cross_entropy(logits, targets)
         loss = loss.mean()
         if mode == "train" or mode == "eval":
@@ -268,15 +269,15 @@ class BSNIPLSTMTrainer(Trainer):
 
     def train(self):
         # model = {"model": self.model}
-        # criterion = {"criterion": nn.CrossEntropyLoss()}
+        criterion = {"criterion": nn.CrossEntropyLoss()}
         # optimizer = {"optimizer": self.optimizer}
         callbacks = [
-            # dl.CriterionCallback(
-            #     input_key="logits",
-            #     target_key="targets",
-            #     metric_key="loss",
-            #     criterion_key="criterion",
-            # ),
+            dl.CriterionCallback(
+                input_key="logits",
+                target_key="targets",
+                metric_key="loss",
+                criterion_key="criterion",
+            ),
             # dl.OptimizerCallback(
             #     model_key="model",
             #     optimizer_key="optimizer",
@@ -289,8 +290,15 @@ class BSNIPLSTMTrainer(Trainer):
                 minimize=True,
                 min_delta=0,
             ),
-            AccuracyCallback(num_classes=2, input_key="logits", target_key="targets"),
-            AUCCallback(input_key="logits", target_key="targets"),
+            AccuracyCallback(
+                num_classes=6, # prev 2
+                input_key="logits",
+                target_key="targets"
+            ),
+            AUCCallback(
+                input_key="logits",
+                target_key="targets"
+            ),
             #     CheckpointCallback(
             #     "./logs", loader_key="valid", metric_key="loss", minimize=True, save_n_best=3,
             #     # load_on_stage_start={"model": "best"},
@@ -309,6 +317,7 @@ class BSNIPLSTMTrainer(Trainer):
         val_dataset = self.validset
         test_dataset = self.testset
 
+        # runner = CustomRunner("./logs")
         runner = dl.SupervisedRunner(
             input_key="features", output_key="logits", target_key="targets", loss_key="loss"
         )
@@ -361,11 +370,11 @@ class BSNIPLSTMTrainer(Trainer):
         #               "get_datasets_fn": self.datasets_fn,
         #               "num_features": num_features,
         #          },
-
+        
         runner.train(
             model=self.model,
             optimizer=self.optimizer,
-            # criterion=criterion,
+            criterion=criterion,
             scheduler=scheduler,
             loaders=loaders,
             valid_loader="valid",

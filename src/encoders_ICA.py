@@ -23,6 +23,7 @@ class NatureCNN(nn.Module):
     def __init__(self, input_channels, args):
         super().__init__()
         self.feature_size = args.feature_size
+        # self.feature_size = 64
         self.hidden_size = self.feature_size
         self.downsample = not args.no_downsample
         self.input_channels = 1
@@ -51,8 +52,12 @@ class NatureCNN(nn.Module):
                 # nn.ReLU()
             )
         else:
-            self.final_conv_size = 64 * 41 * 8
-            self.final_conv_shape = (64, 41, 8)
+            # self.final_conv_size = 64 * 41 * 8
+            # self.final_conv_shape = (64, 41, 8)
+            self.final_conv_size = 88 * 188
+            self.final_conv_shape = (88,188)
+            print("#####\n#####\n#####")
+            print(self.feature_size)
             self.main = nn.Sequential(
                 init_(nn.Conv2d(self.input_channels, 32, 4, stride=1)),
                 nn.ReLU(),
@@ -65,12 +70,21 @@ class NatureCNN(nn.Module):
                 Flatten(),
                 init_(nn.Linear(self.final_conv_size, self.feature_size)),
                 # nn.ReLU()
+                # (64x16544 and 20992x256)
+                # f7.shape = [64,88,188] -> 64x88*188 -> 64x16544
+                # original final_conv_size = 64 * 41 * 8 = 20992
+                # args.features = 256
             )
         self.train()
 
     def forward(self, inputs, fmaps=False):
+        inputs = inputs.float() # added type cast
         f5 = self.main[:6](inputs)
         f7 = self.main[6:8](f5)
+        # print(inputs.shape)
+        # print(f5.shape)
+        # print(f7.shape)
+        # print(self.main[8])
         out = self.main[8:](f7)
         if self.end_with_relu:
             assert self.args.method != "vae", "can't end with relu and use vae!"
@@ -152,6 +166,9 @@ class NatureOneCNN(nn.Module):
         # f5 =  torch.Size([6, 200, 18]) for OASIS
         out = self.main[6:8](f5)
         f5 = self.main[8:](f5)
+        # print(inputs.shape)
+        # print(f5.shape)
+        # print(out.shape)
 
         if self.end_with_relu:
             assert self.args.method != "vae", "can't end with relu and use vae!"
