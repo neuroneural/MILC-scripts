@@ -145,19 +145,19 @@ def get_argparser():
     parser.add_argument(
         "--lr",
         type=float,
-        default=3e-4,
+        default=5e-4, # was 3e-4
         help="Learning Rate foe learning representations (default: 5e-4)",
     )
     parser.add_argument(
         "--batch-size",
         type=int,
-        default=32,
+        default=32, # was 32
         help="Mini-Batch Size (default: 64)",
     )
     parser.add_argument(
         "--epochs",
         type=int,
-        default=3000,
+        default=100, # was 3000
         help="Number of epochs for  (default: 100)",
     )
     parser.add_argument(
@@ -188,7 +188,7 @@ def get_argparser():
     )
     parser.add_argument("--num_rew_evals", type=int, default=10)
     # rl-probe specific arguments
-    parser.add_argument("--checkpoint-index", type=int, default=-1)
+    parser.add_argument("--checkpoint-index", type=int, default=-1) # default -1
 
     # naff-specific arguments
     parser.add_argument(
@@ -254,6 +254,30 @@ def get_argparser():
         type=str,
         choices=["random_agent", "pretrained_ppo"],
         default="random_agent",
+    )
+    parser.add_argument(
+        "-k",
+        "--kfold",
+        dest="k",
+        type=int,
+        default=0,
+        help="Which K-fold to use (default=0)",
+    )
+    parser.add_argument(
+        "-n",
+        "--n-folds",
+        dest="n",
+        type=int,
+        default=5,
+        help="Total number of K-folds (default=5).",
+    )
+    parser.add_argument(
+        "-r",
+        "--random-state",
+        dest="random_state",
+        type=int,
+        default=42,
+        help="What random seed to use (int) (default=42)",
     )
 
     parser.add_argument("--beta", default=1.0)

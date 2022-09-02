@@ -5,6 +5,7 @@ sys.path.append('.')
 import torch
 from torch.utils.data import Subset
 from sklearn.model_selection import train_test_split
+from sklearn.model_selection import KFold
 from src.utils import get_argparser
 import wandb
 
@@ -16,21 +17,31 @@ from src.bsnip_groups import GroupsDataset
 
 def train_encoder(args):
     data = GroupsDataset("./Data/bsnip2/bsnip2_labels.csv")
-    fulltrain_idx, test_idx = train_test_split(
-        list(range(len(data))),
-        test_size=.3,
-        random_state=42
-    )
+    # fulltrain_idx, test_idx = train_test_split(
+    #     list(range(len(data))),
+    #     test_size=.3
+    # )
 
-    train_idx, valid_idx = train_test_split(
-        list(fulltrain_idx),
-        test_size=.2,
-        random_state=42
+    # train_idx, valid_idx = train_test_split(
+    #     list(fulltrain_idx),
+    #     test_size=.2
+    # )
+    
+    kf = KFold(
+        n_splits=args.n,
+        shuffle=True,
+        random_state=args.random_state
     )
     
+    train_idx, valid_idx = list(kf.split(list(range(len(data)))))[args.k]
+    
+    train_idx = [int(i) for i in list(train_idx)]
+    valid_idx = [int(i) for i in list(valid_idx)]
+    
     trainset = Subset(data, train_idx)
-    testset = Subset(data, test_idx)
     validset = Subset(data, valid_idx)
+    # testset = Subset(data, test_idx)
+    
     
     wdb1 = "wandb_new"
     wpath1 = os.path.join(os.getcwd(), wdb1)
@@ -68,7 +79,7 @@ def train_encoder(args):
         device=device,
         oldpath=oldpath,
         complete_arc=True,
-        num_classes=5
+        num_classes=2
     )
     config = {}
     config.update(vars(args))
@@ -86,18 +97,17 @@ def train_encoder(args):
         # val_labels=val_labels,
         # test_labels=test_labels,
         trainset=trainset,
-        testset=testset,
+        # testset=testset,
         validset=validset,
         wandb="wandb",
-        trial="1",
-        batch_size=32,
+        trial="1"
         # gtrial=str(g_trial),
     )
-    trainer.train()
+    trainer.train(args.random_state, args.n, args.k)
 
-# test_acc, test_auc, test_loss = trainer.train()
+    # test_acc, test_auc, test_loss = trainer.train()
 if __name__ == "__main__":
-    wandb.init(project="milc-bsnip2", entity="cedwards57", settings=wandb.Settings(start_method='fork'))
+    # wandb.init(project="milc-bsnip2", entity="cedwards57", settings=wandb.Settings(start_method='fork'))
     parser = get_argparser()
     args = parser.parse_args()
     config = {}

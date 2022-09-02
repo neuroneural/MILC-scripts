@@ -56,8 +56,8 @@ class NatureCNN(nn.Module):
             # self.final_conv_shape = (64, 41, 8)
             self.final_conv_size = 88 * 188
             self.final_conv_shape = (88,188)
-            print("#####\n#####\n#####")
-            print(self.feature_size)
+            # print("#####\n#####\n#####")
+            # print(self.feature_size)
             self.main = nn.Sequential(
                 init_(nn.Conv2d(self.input_channels, 32, 4, stride=1)),
                 nn.ReLU(),

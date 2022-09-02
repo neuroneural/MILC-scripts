@@ -48,16 +48,20 @@ class GroupsDataset(Dataset):
 
 
 ### CODE THAT CREATED THE bsnip2_labels.csv FILE ###
-# # grab & log correct subject IDs
+# grab & log correct subject IDs
 # data = pd.read_csv("./Data/bsnip2/bsnip2_ad_preliminary_20201221.csv")
 # subjects = pd.read_csv("./Data/bsnip2/bsnip2_subjects.txt", header=None)
 # subjects = list(subjects[0])
 # groups = []
+# # SZ, NC, SAD, BP, BPnon, OTH
 # missing = []
 # for i, subject_id in enumerate(subjects):
 #   new = data.loc[data['subject_id'] == subject_id]
 #   try:
-#     groups.append(list(new["group"])[0])
+#     if (list(new["group"])[0] == "OTH") or (list(new["group"])[0] == "BPnon") or (list(new["group"])[0] == "SAD") or (list(new["group"])[0] == "BP"):
+#       missing.append(i)
+#     else:
+#       groups.append(list(new["group"])[0])
 #   except IndexError:
 #     missing.append(i)
 # # missing_ids = [subjects[i] for i in missing]
@@ -77,3 +81,4 @@ class GroupsDataset(Dataset):
 # df["group"] = df["group"].map(groups_map)
 # df.to_csv("./Data/bsnip2/bsnip2_labels.csv")
 ### ###
+# # specify num_classes in src/bsnip_slstm_attn_catalyst AccuracyCallback and in scripts/run_ICA_experiments_BSNIP2_catalyst

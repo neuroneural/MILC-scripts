@@ -9,6 +9,8 @@ from catalyst.dl import (
     PrecisionRecallF1SupportCallback,
     CheckpointCallback,
 )
+
+from catalyst.loggers.csv import CSVLogger
 import numpy as np
 from sklearn.metrics import roc_auc_score
 import torch
@@ -69,9 +71,6 @@ class CustomRunner(dl.Runner):
         return epoch_accuracy, epoch_roc, epoch_loss
 
     def handle_batch(self, batch):
-        # print("#####\n#####\n#####")
-        # print(batch.shape)
-        # print("#####\n#####\n#####")
         sx, targets = batch
         targets = targets.long()
         if self.is_train_loader:
@@ -79,7 +78,6 @@ class CustomRunner(dl.Runner):
         else:
             mode = "eval"
         logits = self.model(sx, mode)
-        print("#####\n#####\n#####")
         loss = F.cross_entropy(logits, targets)
         loss = loss.mean()
         if mode == "train" or mode == "eval":
@@ -185,13 +183,12 @@ class BSNIPLSTMTrainer(Trainer):
         config,
         device,
         trainset,
-        testset,
+        # testset,
         validset,
         wandb=None,
         trial="",
         crossv="",
-        gtrial="",
-        batch_size=100
+        gtrial=""
     ):
         super().__init__("encoder", wandb, device)
         self.config = config
@@ -203,11 +200,11 @@ class BSNIPLSTMTrainer(Trainer):
         # self.val_eps = ""
         # self.tst_eps = ""
         self.trainset = trainset
-        self.testset = testset
+        # self.testset = testset
         self.validset = validset
         self.patience = self.config["patience"]
         self.epochs = config["epochs"]
-        self.batch_size = batch_size # config["batch_size"]
+        self.batch_size = config["batch_size"]
         self.sample_number = config["sample_number"]
         self.path = config["path"]
         # self.oldpath = config["oldpath"]
@@ -267,7 +264,7 @@ class BSNIPLSTMTrainer(Trainer):
 
         return {"train": self.trainset, "valid": self.validset}
 
-    def train(self):
+    def train(self, random_state, n, k):
         # model = {"model": self.model}
         criterion = {"criterion": nn.CrossEntropyLoss()}
         # optimizer = {"optimizer": self.optimizer}
@@ -283,15 +280,15 @@ class BSNIPLSTMTrainer(Trainer):
             #     optimizer_key="optimizer",
             #     metric_key="loss"
             # ),
-            EarlyStoppingCallback(
-                patience=15,
-                metric_key="loss",
-                loader_key="valid",
-                minimize=True,
-                min_delta=0,
-            ),
+            # EarlyStoppingCallback(
+            #     patience=15,
+            #     metric_key="loss",
+            #     loader_key="valid",
+            #     minimize=True,
+            #     min_delta=0,
+            # ),
             AccuracyCallback(
-                num_classes=6, # prev 2
+                num_classes=2, # prev 2
                 input_key="logits",
                 target_key="targets"
             ),
@@ -299,11 +296,11 @@ class BSNIPLSTMTrainer(Trainer):
                 input_key="logits",
                 target_key="targets"
             ),
-            #     CheckpointCallback(
-            #     "./logs", loader_key="valid", metric_key="loss", minimize=True, save_n_best=3,
-            #     # load_on_stage_start={"model": "best"},
-            #     load_on_stage_end={"model": "best"}
-            # ),
+            CheckpointCallback(
+                "./logs/checkpoints", loader_key="valid", metric_key="loss", minimize=True,
+                # load_on_stage_start={"model": "best"},
+                # load_on_stage_end={"model": "best"}
+            ),
         ]
 
         scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
@@ -315,7 +312,7 @@ class BSNIPLSTMTrainer(Trainer):
 
         train_dataset = self.trainset
         val_dataset = self.validset
-        test_dataset = self.testset
+        # test_dataset = self.testset
 
         # runner = CustomRunner("./logs")
         runner = dl.SupervisedRunner(
@@ -338,7 +335,7 @@ class BSNIPLSTMTrainer(Trainer):
                 batch_size=len(val_dataset),
                 num_workers=0,
                 shuffle=True,
-            ),
+            )
         }
 
         if self.complete_arc == True:
@@ -379,25 +376,27 @@ class BSNIPLSTMTrainer(Trainer):
             loaders=loaders,
             valid_loader="valid",
             callbacks=callbacks,
-            logdir="./logs",
+            # logdir="./logs",
             num_epochs=self.epochs,
             verbose=True,
-            load_best_on_end=True,
+            load_best_on_end=False, # True
             valid_metric="loss",
             minimize_valid_metric=True,
-            loggers={"wandb": dl.WandbLogger(project="milc-bsnip2", name="test_1")}
+            loggers={"csvlogger": CSVLogger(logdir=f"/data/users2/cedwards57/MILC/logs/bsnip/rs{random_state}/{k+1}_{n}")}
         )
+        
+        # logger: "wandb": dl.WandbLogger(project="milc-bsnip2", name="test_1")
 
-        loader = (
-            DataLoader(test_dataset, batch_size=len(test_dataset), num_workers=1, shuffle=True),
-        )
-
-        (
-            self.test_accuracy,
-            self.test_auc,
-            self.test_loss,
-        ) = runner.predict_batch(next(iter(loader)))
-        return self.test_accuracy, self.test_auc, test_loss
+        # test_loader = (
+        #     DataLoader(test_dataset, batch_size=len(test_dataset), num_workers=1, shuffle=True),
+        # )
+        
+        # (
+        #     self.test_accuracy,
+        #     self.test_auc,
+        #     self.test_loss,
+        # ) = runner.predict_batch(next(iter(test_loader)))
+        return
 
     # def pre_train(self, tr_eps, val_eps, tst_eps):
     #     self.tr_eps = tr_eps
