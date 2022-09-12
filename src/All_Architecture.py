@@ -122,8 +122,9 @@ class combinedModel(nn.Module):
         return logits
 
     def forward(self, sx, mode="train"):
-        inputs = [self.encoder(x, fmaps=False) for x in sx]
+        inputs = [self.encoder(x) for x in sx] # sliding over subjects?
         outputs = self.lstm(inputs, mode)
         logits = self.get_attention(outputs)
+        
 
         return logits

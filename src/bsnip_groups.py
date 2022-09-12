@@ -46,6 +46,20 @@ class GroupsDataset(Dataset):
   def __len__(self):
     return len(self.labels)
 
+class RawDataset(Dataset):
+  def __init__(self, csv_location):
+    super(RawDataset, self).__init__()
+# GA: 243
+# rest = raw
+# Sp = spatial warping
+# SmNSp = smoothed & normalized
+# NSp = normalized & spatial warped
+# use glob for file searching
+# prediction of groups
+# ask about time direction generation/label code
+# dimensions: batch, x, y, z, channels
+# previously: batch, x, y, channels
+
 
 ### CODE THAT CREATED THE bsnip2_labels.csv FILE ###
 # grab & log correct subject IDs

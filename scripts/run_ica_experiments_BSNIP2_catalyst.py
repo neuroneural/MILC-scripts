@@ -10,16 +10,17 @@ from src.utils import get_argparser
 import wandb
 
 from src.All_Architecture import combinedModel
-from src.encoders_ICA import NatureCNN
+from src.encoders_ICA import NatureCNN, ResNet_13, BasicBlock
 from src.lstm_attn import subjLSTM
 from src.bsnip_slstm_attn_catalyst import BSNIPLSTMTrainer
-from src.bsnip_groups import GroupsDataset
+from src.bsnip_groups import GroupsDataset, RawDataset
 
 def train_encoder(args):
     data = GroupsDataset("./Data/bsnip2/bsnip2_labels.csv")
     # fulltrain_idx, test_idx = train_test_split(
     #     list(range(len(data))),
-    #     test_size=.3
+    #     test_size=.3,
+    #     random_state=42
     # )
 
     # train_idx, valid_idx = train_test_split(
@@ -32,6 +33,8 @@ def train_encoder(args):
         shuffle=True,
         random_state=args.random_state
     )
+    
+    # train_idx, valid_idx = list(kf.split(test_idx))[args.k]
     
     train_idx, valid_idx = list(kf.split(list(range(len(data)))))[args.k]
     
@@ -62,6 +65,9 @@ def train_encoder(args):
 
     observation_shape = data.shape
     encoder = NatureCNN(observation_shape[1], args)
+    # block = BasicBlock(3,6,2)
+    # encoder = ResNet_13(BasicBlock, [3,3,3], 2, args)
+    
     lstm_model = subjLSTM(
         device,
         args.feature_size,
