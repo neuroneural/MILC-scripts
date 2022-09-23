@@ -13,10 +13,10 @@ from src.All_Architecture import combinedModel
 from src.encoders_ICA import NatureCNN, ResNet_13, BasicBlock
 from src.lstm_attn import subjLSTM
 from src.bsnip_slstm_attn_catalyst import BSNIPLSTMTrainer
-from src.bsnip_groups import GroupsDataset, RawDataset
+from src.bsnip_datasets import GroupsDataset, RawDataset
 
 def train_encoder(args):
-    data = GroupsDataset("./Data/bsnip2/bsnip2_labels.csv")
+    data = RawDataset()
     # fulltrain_idx, test_idx = train_test_split(
     #     list(range(len(data))),
     #     test_size=.3,
@@ -64,9 +64,8 @@ def train_encoder(args):
         device = torch.device("cpu")
 
     observation_shape = data.shape
-    encoder = NatureCNN(observation_shape[1], args)
-    # block = BasicBlock(3,6,2)
-    # encoder = ResNet_13(BasicBlock, [3,3,3], 2, args)
+    # encoder = NatureCNN(observation_shape[1], args)
+    encoder = ResNet_13(BasicBlock, [3,3,3], 2, args)
     
     lstm_model = subjLSTM(
         device,
@@ -113,7 +112,7 @@ def train_encoder(args):
 
     # test_acc, test_auc, test_loss = trainer.train()
 if __name__ == "__main__":
-    # wandb.init(project="milc-bsnip2", entity="cedwards57", settings=wandb.Settings(start_method='fork'))
+    # wandb.init(project="milc-bsnip2-raw", entity="cedwards57", settings=wandb.Settings(start_method='fork'))
     parser = get_argparser()
     args = parser.parse_args()
     config = {}

@@ -6,7 +6,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.nn.utils.rnn as tn
 
-
 class combinedModel(nn.Module):
     """Bidirectional LSTM for classifying subjects."""
 
@@ -20,7 +19,7 @@ class combinedModel(nn.Module):
         device="cuda",
         oldpath="",
         complete_arc=False,
-        num_classes=5
+        num_classes=2
     ):
 
         super().__init__()
@@ -110,21 +109,27 @@ class combinedModel(nn.Module):
         weights = torch.stack(weights_list)
 
         weights = weights.squeeze()
-
-        normalized_weights = F.softmax(weights, dim=1)
-
-        attn_applied = torch.bmm(normalized_weights.unsqueeze(1), outputs)
-
+        # weights should have more than one dimension
+        normalized_weights = F.softmax(weights, dim=0) #was dim=1
+        # normalized_weights.shape:
+        # oasis: [16,7]
+        # bsnip resnet: [200] // expects 3D tensor
+        # outputs.shape bsnip: [200, 1, 200]
+        attn_applied = torch.bmm(normalized_weights.unsqueeze(1).unsqueeze(1), outputs)
         attn_applied = attn_applied.squeeze()
+        # attn_applied: [200,1,200] -> [200, 200]
         logits = self.decoder(attn_applied)
         
         # print("attention decoder ", time.time() - t)
         return logits
 
     def forward(self, sx, mode="train"):
-        inputs = [self.encoder(x) for x in sx] # sliding over subjects?
-        outputs = self.lstm(inputs, mode)
+        # print("sx", sx.shape)
+        # inputs = [self.encoder(x) for x in sx] # sliding over batches
+        inputs = [self.encoder(torch.unsqueeze(sx[:, x, :, :, :],1).float()) for x in range(sx.shape[1])] # sliding over time
+        inputs = [i[1] for i in inputs]
+        inputs = torch.stack(inputs)
+        inputs = torch.swapdims(inputs, 0, 1) # inputs.shape: [batch_size, time, encoding]
+        outputs = self.lstm(inputs, mode) # outputs shape [200, 1, 200]
         logits = self.get_attention(outputs)
-        
-
         return logits

@@ -3,7 +3,7 @@ import wandb
 import argparse
 
 def combine_logs(n, random_state):
-    wandb.init(project="milc-bsnip2", entity="cedwards57", name=f"R{random_state} KFOLD", settings=wandb.Settings(start_method='fork'))
+    wandb.init(project="milc-bsnip2-raw", entity="cedwards57", name=f"R{random_state} KFOLD", settings=wandb.Settings(start_method='fork'))
     train_dfs = []
     valid_dfs = []
     for i in range(n):

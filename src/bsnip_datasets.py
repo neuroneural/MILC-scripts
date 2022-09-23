@@ -4,8 +4,8 @@ from torch.utils.data import Dataset
 import nibabel as nib
 import pandas as pd
 import glob
+from pathlib import Path
 import numpy as np
-device = "cuda"
 
 class GroupsDataset(Dataset):
   def __init__(self, csv_location, MAX_TC=200):
@@ -41,14 +41,76 @@ class GroupsDataset(Dataset):
       # label = label.float()
       # print(f"img.shape: {img.shape}")
       # print(f"label.shape: {label.shape}")
+    
     return img, label
     
   def __len__(self):
     return len(self.labels)
 
+
 class RawDataset(Dataset):
-  def __init__(self, csv_location):
+  def __init__(self, update_csv=False, raw_dir="./Data/bsnip2/raw/Raw_Data", processing="raw", select_groups={"SZ", "NC"}):
+    '''raw_dir and select_groups will be ignored unless update_csv=True.'''
     super(RawDataset, self).__init__()
+    processing_dict = {
+      "raw": "", # min shape (222, 30, 64, 64)
+      "nsp": "NSp", # Normalized & spatial warped; min shape (200, 52, 63, 53)
+      "smnsp": "SmNSp" # Smoothed, normalized, & spatial warped; min shape (200, 52, 63, 53)
+    }
+    self.select_groups = select_groups
+    self.raw_dir = raw_dir
+    self.processing = processing.lower()
+    self.files = list(glob.glob(f"{raw_dir}/*/*/ses_01/func1/{processing_dict[self.processing]}rest.nii"))
+    if update_csv: self.__update_csv()
+    self.df = pd.read_csv("./Data/bsnip2/bsnip2_raw_labels.csv", dtype={"subject_id": int, "filename": str, "group": int})
+    self.shape = self.df.shape
+    self.nifti_files = self.df['filename']
+    self.labels = self.df['group']
+    
+  def __getitem__(self, k):
+    label = self.labels[k]
+    if isinstance(k, int):
+      img = nib.load(self.nifti_files[k])
+      img = img.slicer[:,:,:,:200]
+      img = img.get_fdata().T
+    
+    else:
+      img = []
+      for i in self.nifti_files[k]:
+        new = nib.load(i)
+        new = new.slicer[:,:,:,:200]
+        new = new.get_fdata().T
+        img.append(new)
+      img = np.stack(img)
+      label = label.to_numpy()
+    return img, label
+  
+  def __len__(self):
+    return self.df.shape[0]
+  
+  def __update_csv(self):
+    df = pd.DataFrame(columns={"subject_id": int, "filename": str, "group": int})
+    groups_list = list(set(self.select_groups))
+    groups_map = dict(zip(groups_list, range(len(groups_list))))
+    omitted_subjects = {22281, 22111, 23333, 23520, 23083, 21193, 24077} # unusually tiny dimensions for raw data
+    info = pd.read_csv("./Data/bsnip2/bsnip2_ad_preliminary_20201221.csv")
+    for file in self.files:
+      try:
+        subject_id = int(Path(file).parents[2].name)
+        csv_row = info.loc[info["subject_id"] == subject_id].to_dict("records")[0]
+        if csv_row["group"] in self.select_groups and subject_id not in omitted_subjects:
+          new_df_row = {
+            "subject_id": subject_id,
+            "filename": Path(file).absolute(),
+            "group": groups_map[csv_row["group"]]
+          }
+          df = df.append(new_df_row, ignore_index=True)
+      except (IndexError, ValueError):
+        # IndexError: subject_id not found in the info CSV
+        # ValueError: "PILOT" subject instead of an ID number; failed int conversion
+        pass
+    df.to_csv("./Data/bsnip2/bsnip2_raw_labels.csv")
+    
 # GA: 243
 # rest = raw
 # Sp = spatial warping

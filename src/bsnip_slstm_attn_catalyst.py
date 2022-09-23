@@ -72,6 +72,7 @@ class CustomRunner(dl.Runner):
 
     def handle_batch(self, batch):
         sx, targets = batch
+        # ###
         targets = targets.long()
         if self.is_train_loader:
             mode = "train"
@@ -121,6 +122,7 @@ class CustomRunner(dl.Runner):
             y_scores = sig.detach()[:, 1]
             roc = roc_auc_score(targets.to("cpu"), y_scores.to("cpu"))
         accuracy = calculate_accuracy_by_labels(indices, targets)
+        # ###
 
         return accuracy, roc
 
@@ -385,7 +387,7 @@ class BSNIPLSTMTrainer(Trainer):
             loggers={"csvlogger": CSVLogger(logdir=f"/data/users2/cedwards57/MILC/logs/bsnip/rs{random_state}/{k+1}_{n}")}
         )
         
-        # logger: "wandb": dl.WandbLogger(project="milc-bsnip2", name="test_1")
+        # logger: "wandb": dl.WandbLogger(project="milc-bsnip2-raw", name="test_1")
 
         # test_loader = (
         #     DataLoader(test_dataset, batch_size=len(test_dataset), num_workers=1, shuffle=True),

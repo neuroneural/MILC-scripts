@@ -32,8 +32,9 @@ class ResNet_13(nn.Module):
         self.layer3 = self._make_layer(block, 256, layers[2], stride=2)
         # self.layer4 = self._make_layer(block, 512, layers[3], stride=2)
         self.avgpool = nn.AvgPool3d(3)
-        self.fc = nn.Linear(9216 * block.expansion, 512)
-        self.fc2 = nn.Linear(512, num_classes)
+        # self.fc = nn.Linear(9216 * block.expansion, 512)
+        self.fc = nn.Linear(256 * block.expansion, 256) # was ,512
+        self.fc2 = nn.Linear(256, num_classes) #was 512,
 
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
@@ -62,6 +63,7 @@ class ResNet_13(nn.Module):
         return nn.Sequential(*layers)
     
     def forward(self,x):
+        # print("###", x.shape) # [1, 1, 30, 64, 64]
         x = self.conv1(x)
         x = self.bn1(x)
         x = self.relu(x)
@@ -70,9 +72,11 @@ class ResNet_13(nn.Module):
         x = self.layer2(x)        
         x = self.layer3(x)
         x = self.avgpool(x)
+        # print("##", x.shape) # [1, 256, 1, 1, 1]
         x = x.view(x.size(0), -1)
         x1 = self.fc(x)
         x = self.fc2(x1)
+        # print("#", x.shape) # [1, 2]
         return [x,x1]
 
 class BasicBlock(nn.Module):
