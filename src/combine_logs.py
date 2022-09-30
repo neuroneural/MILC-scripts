@@ -53,4 +53,6 @@ parser.add_argument(
     help="Number of folds",
 )
 
+args = parser.parse_args()
+
 combine_logs(args.n, args.random_state)

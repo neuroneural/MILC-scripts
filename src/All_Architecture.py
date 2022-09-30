@@ -115,7 +115,8 @@ class combinedModel(nn.Module):
         # oasis: [16,7]
         # bsnip resnet: [200] // expects 3D tensor
         # outputs.shape bsnip: [200, 1, 200]
-        attn_applied = torch.bmm(normalized_weights.unsqueeze(1).unsqueeze(1), outputs)
+        # print(normalized_weights.unsqueeze(1).shape, outputs.shape)
+        attn_applied = torch.bmm(normalized_weights.unsqueeze(1), outputs)
         attn_applied = attn_applied.squeeze()
         # attn_applied: [200,1,200] -> [200, 200]
         logits = self.decoder(attn_applied)

@@ -20,20 +20,20 @@ def conv3x3(in_planes, out_planes, stride=1):
 
 class ResNet_13(nn.Module):
     def __init__(self, block, layers, num_classes, args):
-        self.inplanes = 64
+        self.inplanes = 32
         super(ResNet_13, self).__init__()
-        self.conv1 = nn.Conv3d(1, 64, kernel_size=3, stride=2, padding=3, bias=False)
+        self.conv1 = nn.Conv3d(1, 32, kernel_size=3, stride=2, padding=3, bias=False)
         self.feature_size = args.feature_size
-        self.bn1 = nn.BatchNorm3d(64)
+        self.bn1 = nn.BatchNorm3d(32)
         self.relu = nn.ReLU(inplace=True)
         self.maxpool = nn.MaxPool3d(kernel_size=3, stride=2, padding=1)
-        self.layer1 = self._make_layer(block, 64, layers[0])
-        self.layer2 = self._make_layer(block, 128, layers[1], stride=2)
-        self.layer3 = self._make_layer(block, 256, layers[2], stride=2)
+        self.layer1 = self._make_layer(block, 32, layers[0])
+        self.layer2 = self._make_layer(block, 64, layers[1], stride=2)
+        self.layer3 = self._make_layer(block, 128, layers[2], stride=2)
         # self.layer4 = self._make_layer(block, 512, layers[3], stride=2)
         self.avgpool = nn.AvgPool3d(3)
         # self.fc = nn.Linear(9216 * block.expansion, 512)
-        self.fc = nn.Linear(256 * block.expansion, 256) # was ,512
+        self.fc = nn.Linear(128 * block.expansion, 256) # was ,512
         self.fc2 = nn.Linear(256, num_classes) #was 512,
 
         for m in self.modules():

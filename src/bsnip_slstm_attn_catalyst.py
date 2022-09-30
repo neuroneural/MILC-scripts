@@ -331,12 +331,14 @@ class BSNIPLSTMTrainer(Trainer):
                 batch_size=self.batch_size,
                 num_workers=0,
                 shuffle=True,
+                drop_last=True
             ),
             "valid": DataLoader(
                 val_dataset,
-                batch_size=len(val_dataset),
+                batch_size=self.batch_size,
                 num_workers=0,
                 shuffle=True,
+                drop_last=True
             )
         }
 
@@ -384,7 +386,7 @@ class BSNIPLSTMTrainer(Trainer):
             load_best_on_end=False, # True
             valid_metric="loss",
             minimize_valid_metric=True,
-            loggers={"csvlogger": CSVLogger(logdir=f"/data/users2/cedwards57/MILC/logs/bsnip/rs{random_state}/{k+1}_{n}")}
+            loggers={"csvlogger": CSVLogger(logdir=f"/data/users2/cedwards57/MILC/logs/bsnip/rs{random_state}/{k+1}_{n}", "wandb": dl.WandbLogger(project="milc-bsnip2-raw", name=f"R{random_state} K{k+1}/{n}"))}
         )
         
         # logger: "wandb": dl.WandbLogger(project="milc-bsnip2-raw", name="test_1")

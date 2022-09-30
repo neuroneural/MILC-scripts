@@ -112,7 +112,7 @@ def train_encoder(args):
 
     # test_acc, test_auc, test_loss = trainer.train()
 if __name__ == "__main__":
-    # wandb.init(project="milc-bsnip2-raw", entity="cedwards57", settings=wandb.Settings(start_method='fork'))
+    wandb.init(project="milc-bsnip2-raw", entity="cedwards57", settings=wandb.Settings(start_method='fork'))
     parser = get_argparser()
     args = parser.parse_args()
     config = {}
